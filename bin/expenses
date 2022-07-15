@@ -1,3 +1,5 @@
 #!/usr/bin/env node
 
 require("../build/cli").cli(process.argv);
+
+console.lo
