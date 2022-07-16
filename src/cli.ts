@@ -1,10 +1,11 @@
 import arg from "arg";
 import inquirer from "inquirer";
+import chalk from "chalk";
+import Listr from "listr";
 
 import createExpenseReport from "./expense-report/expense-report";
 import bankScraperClient from "./clients/bank-scraper-client";
 import expenseRepository from "./expense-repository";
-import chalk from "chalk";
 
 type Options = {
   id?: string;
@@ -76,33 +77,43 @@ async function promptForMissingOptions(options: Options) {
 }
 
 export async function cli(args: string[]) {
-  console.log(chalk.bold(chalk.green("Welcome to Expenses CLI")));
+  console.log(chalk.green.bold("Welcome to Expenses CLI"));
   const options = parseArgumentsIntoOptions(args);
 
   const { id, password, card6Digits, fromDate } = await promptForMissingOptions(
     options
   );
-  console.log(chalk.underline(chalk.green("Creating Expense Report for:")));
+  console.log(chalk.green.underline("Creating Expense Report for:"));
 
   console.log(chalk.greenBright(`ID: ${id}`));
   console.log(chalk.greenBright(`Date: ${fromDate}`));
   console.log(chalk.greenBright("Password: ***********"));
   console.log(chalk.greenBright(`Digits: ${card6Digits}`));
 
-  const aggregatedExpenses = await createExpenseReport(
+  const tasks = new Listr([
     {
-      expenseRepository,
-      bankScraperClient,
-    },
-    {
-      fromDate: new Date(fromDate),
-      credentials: {
-        id,
-        card6Digits,
-        password,
+      title: "Creating Expense Report",
+      task: async (ctx) => {
+        ctx.aggregatedExpenses = await createExpenseReport(
+          {
+            expenseRepository,
+            bankScraperClient,
+          },
+          {
+            fromDate: new Date(fromDate),
+            credentials: {
+              id,
+              card6Digits,
+              password,
+            },
+          }
+        );
       },
-    }
-  );
+    },
+  ]);
+
+  const { aggregatedExpenses } = await tasks.run();
   console.table(aggregatedExpenses);
+
   console.log(chalk.green("Done"));
 }
