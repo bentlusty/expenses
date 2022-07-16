@@ -2,11 +2,13 @@ import arg from "arg";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import Listr from "listr";
+import { Command } from "commander";
 
 import createExpenseReport from "./expense-report/expense-report";
 import bankScraperClient from "./clients/bank-scraper-client";
 import expenseRepository from "./repositories/expense-repository/expense-repository";
 import businessRepository from "./repositories/business-repository/business-repository";
+const packageJson = require("../package.json");
 
 type Options = {
   id?: string;
@@ -78,7 +80,26 @@ async function promptForMissingOptions(options: Options) {
 }
 
 export async function cli(args: string[]) {
+  const version: string = packageJson.version;
+
+  const program = new Command();
   console.log(chalk.green.bold("Welcome to Expenses CLI"));
+
+  program
+    .version(version)
+    .name("expenses")
+    .description("This CLI will help you manage your expenses");
+
+  program
+    .command("generate-report")
+    .description("Generate a report with your Visa credit card company")
+    .option("--id", "The 'Teodat Zehut'")
+    .option("--digits", "Last six digits of the credit card")
+    .option("--password", "The password to connect to Isracard")
+    .option("--from", "The date that we should start gathering the data from");
+
+  program.parse();
+
   const options = parseArgumentsIntoOptions(args);
 
   const { id, password, card6Digits, fromDate } = await promptForMissingOptions(
