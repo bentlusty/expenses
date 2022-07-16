@@ -1,43 +1,13 @@
-import arg from "arg";
+import { ArgumentsCamelCase } from "yargs";
+import Listr from "listr";
+import createExpenseReport from "../expense-report/expense-report";
+import expenseRepository from "../repositories/expense-repository/expense-repository";
+import bankScraperClient from "../clients/bank-scraper-client";
+import businessRepository from "../repositories/business-repository/business-repository";
 import inquirer from "inquirer";
 import chalk from "chalk";
-import Listr from "listr";
-import { Command } from "commander";
 
-import createExpenseReport from "./expense-report/expense-report";
-import bankScraperClient from "./clients/bank-scraper-client";
-import expenseRepository from "./repositories/expense-repository/expense-repository";
-import businessRepository from "./repositories/business-repository/business-repository";
-const packageJson = require("../package.json");
-
-type Options = {
-  id?: string;
-  card6Digits?: string;
-  password?: string;
-  fromDate?: string;
-};
-
-function parseArgumentsIntoOptions(rawArgs: string[]): Options {
-  const args = arg(
-    {
-      "--id": String,
-      "--digits": String,
-      "--password": String,
-      "--from": String,
-    },
-    {
-      argv: rawArgs.slice(2),
-    }
-  );
-  return {
-    id: args["--id"],
-    card6Digits: args["--digits"],
-    password: args["--password"],
-    fromDate: args["--from"],
-  };
-}
-
-async function promptForMissingOptions(options: Options) {
+async function promptForMissingOptions(options: ArgumentsCamelCase) {
   const questions = [];
   if (!options.id) {
     questions.push({
@@ -46,7 +16,7 @@ async function promptForMissingOptions(options: Options) {
       message: "What is your ID (Teodat Zehut)?",
     });
   }
-  if (!options.card6Digits) {
+  if (!options.digits) {
     questions.push({
       type: "input",
       name: "card6Digits",
@@ -60,7 +30,7 @@ async function promptForMissingOptions(options: Options) {
       message: "What is your password?",
     });
   }
-  if (!options.fromDate) {
+  if (!options.from) {
     questions.push({
       type: "input",
       name: "fromDate",
@@ -78,35 +48,11 @@ async function promptForMissingOptions(options: Options) {
     fromDate: options.fromDate || answers.fromDate,
   };
 }
-
-export async function cli(args: string[]) {
-  const version: string = packageJson.version;
-
-  const program = new Command();
-  console.log(chalk.green.bold("Welcome to Expenses CLI"));
-
-  program
-    .version(version)
-    .name("expenses")
-    .description("This CLI will help you manage your expenses");
-
-  program
-    .command("generate-report")
-    .description("Generate a report with your Visa credit card company")
-    .option("--id", "The 'Teodat Zehut'")
-    .option("--digits", "Last six digits of the credit card")
-    .option("--password", "The password to connect to Isracard")
-    .option("--from", "The date that we should start gathering the data from");
-
-  program.parse();
-
-  const options = parseArgumentsIntoOptions(args);
-
+export default async function generateReportCommand(args: ArgumentsCamelCase) {
   const { id, password, card6Digits, fromDate } = await promptForMissingOptions(
-    options
+    args
   );
   console.log(chalk.green.underline("Creating Expense Report for:"));
-
   console.log(chalk.greenBright(`ID: ${id}`));
   console.log(chalk.greenBright(`Date: ${fromDate}`));
   console.log(chalk.greenBright("Password: ***********"));
