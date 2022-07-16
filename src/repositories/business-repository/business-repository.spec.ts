@@ -1,19 +1,19 @@
 import businessRepository from "./business-repository";
-const fs = require("fs").promises;
+import * as fs from "fs";
 
 describe("Business Repository", () => {
   const path = "./tmp/tmp-businesses.json";
 
   afterEach(async () => {
-    await fs.unlink(path);
+    await fs.promises.unlink(path);
   });
 
   it("should return an Original Business Name to normalize Business Name", async () => {
     const originalBusinessName = "סופר יודה";
-    let originalBusinessNameToNormalized = {
+    const originalBusinessNameToNormalized = {
       [originalBusinessName]: "Super Yoda",
     };
-    await fs.writeFile(
+    await fs.promises.writeFile(
       path,
       JSON.stringify(originalBusinessNameToNormalized),
       "utf-8"
@@ -26,7 +26,7 @@ describe("Business Repository", () => {
   it("should save a new Business Name", async () => {
     await businessRepository.setBusinesses(path, { business: "10" });
 
-    const expectedResult = await fs.readFile(path, "utf-8");
+    const expectedResult = await fs.promises.readFile(path, "utf-8");
     expect(JSON.parse(expectedResult)).toStrictEqual({ business: "10" });
   });
 });

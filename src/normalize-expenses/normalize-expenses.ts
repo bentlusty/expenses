@@ -27,7 +27,7 @@ export default async function normalizeExpenses(
       credentials,
     }
   );
-  let pathToJson = path.join(__dirname, "../../src/db/businesses.json");
+  const pathToJson = path.join(__dirname, "../../src/db/businesses.json");
   const businesses = await businessRepository.getBusinesses(pathToJson);
 
   for (const expense of allExpenses) {
