@@ -3,7 +3,7 @@ import * as fs from "fs";
 import path from "path";
 
 describe("Business Repository", () => {
-  const jsonPath = path.join(__dirname, "../../../tmp/businesses.json");
+  const jsonPath = path.join(__dirname, "./businesses.json");
 
   afterEach(async () => {
     await fs.promises.unlink(jsonPath);
