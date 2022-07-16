@@ -1,25 +1,6 @@
-import { BankScraperClient } from "./clients/bank-scraper-client";
 import { CompanyTypes } from "israeli-bank-scrapers";
-import { isracardCredentials } from "./config";
-import { ScraperCredentials } from "israeli-bank-scrapers/lib/scrapers/base-scraper";
-
-type Expense = {
-  businessName: string;
-  amount: number;
-};
-
-type Dependencies = {
-  bankScraperClient: BankScraperClient;
-};
-
-type Props = {
-  fromDate: Date;
-  credentials?: ScraperCredentials;
-};
-
-export type ExpenseRepository = {
-  getAllExpenses(dependencies: Dependencies, props: Props): Promise<Expense[]>;
-};
+import { isracardCredentials } from "../../config";
+import { Dependencies, Expense, Props } from "./types";
 
 export async function getAllExpenses(
   { bankScraperClient }: Dependencies,

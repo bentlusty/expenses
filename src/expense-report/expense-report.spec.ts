@@ -3,7 +3,7 @@ import {
   TransactionStatuses,
   TransactionTypes,
 } from "israeli-bank-scrapers/lib/transactions";
-import expenseRepository from "../expense-repository";
+import expenseRepository from "../repositories/expense-repository/expense-repository";
 
 describe("Expense Report", () => {
   it("should display expense report flow", async () => {

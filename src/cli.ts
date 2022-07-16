@@ -5,7 +5,7 @@ import Listr from "listr";
 
 import createExpenseReport from "./expense-report/expense-report";
 import bankScraperClient from "./clients/bank-scraper-client";
-import expenseRepository from "./expense-repository";
+import expenseRepository from "./repositories/expense-repository/expense-repository";
 
 type Options = {
   id?: string;
