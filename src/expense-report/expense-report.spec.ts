@@ -7,7 +7,7 @@ import expenseRepository from "../expense-repository";
 
 describe("Expense Report", () => {
   it("should display expense report flow", async () => {
-    let bankScraperClient = {
+    const bankScraperClient = {
       get: () =>
         Promise.resolve([
           {
