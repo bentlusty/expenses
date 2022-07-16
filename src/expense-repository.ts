@@ -17,6 +17,10 @@ type Props = {
   credentials?: ScraperCredentials;
 };
 
+export type ExpenseRepository = {
+  getAllExpenses(dependencies: Dependencies, props: Props): Promise<Expense[]>;
+};
+
 export async function getAllExpenses(
   { bankScraperClient }: Dependencies,
   { fromDate, credentials }: Props

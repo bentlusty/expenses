@@ -1,7 +1,7 @@
-import expenseRepository from "./expense-repository";
-import bankScraperClient from "./clients/bank-scraper-client";
 import arg from "arg";
-import { aggregateExpenses } from "./aggregate-expenses/aggregate-expenses";
+import createExpenseReport from "./expense-report/expense-report";
+import bankScraperClient from "./clients/bank-scraper-client";
+import expenseRepository from "./expense-repository";
 
 function parseArgumentsIntoOptions(rawArgs: string[]) {
   const args = arg(
@@ -28,8 +28,11 @@ export async function cli(args: string[]) {
     parseArgumentsIntoOptions(args);
 
   if (id && password && card6Digits && fromDate) {
-    const allExpenses = await expenseRepository.getAllExpenses(
-      { bankScraperClient },
+    const aggregatedExpenses = await createExpenseReport(
+      {
+        expenseRepository,
+        bankScraperClient,
+      },
       {
         fromDate: new Date(fromDate),
         credentials: {
@@ -39,7 +42,6 @@ export async function cli(args: string[]) {
         },
       }
     );
-    let aggregatedExpenses = aggregateExpenses(allExpenses);
     console.log(aggregatedExpenses);
   }
 }
