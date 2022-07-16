@@ -4,34 +4,43 @@ import {
   TransactionTypes,
 } from "israeli-bank-scrapers/lib/transactions";
 import expenseRepository from "../repositories/expense-repository/expense-repository";
-import businessRepository from "../repositories/business-repository/business-repository";
+
+function buildExpense(overrides?: Record<string, unknown>) {
+  return {
+    type: TransactionTypes.Normal,
+    date: "2022-06-18T21:00:00.000Z",
+    processedDate: "",
+    originalAmount: 100,
+    originalCurrency: "",
+    chargedAmount: 100,
+    description: "Water Bill",
+    status: TransactionStatuses.Completed,
+    ...overrides,
+  };
+}
 
 describe("Expense Report", () => {
   it("should display expense report flow", async () => {
     const bankScraperClient = {
       get: () =>
         Promise.resolve([
-          {
-            type: TransactionTypes.Normal,
-            date: "",
-            processedDate: "",
-            originalAmount: 100,
-            originalCurrency: "",
+          buildExpense({
             chargedAmount: 100,
-            description: "Water Bill",
-            status: TransactionStatuses.Completed,
-          },
-          {
-            type: TransactionTypes.Normal,
-            date: "",
-            processedDate: "",
-            originalAmount: 100,
-            originalCurrency: "",
-            chargedAmount: 100,
-            description: "Water Bill",
-            status: TransactionStatuses.Completed,
-          },
+            date: "2022-01-01T21:00:00.000Z",
+          }),
+          buildExpense({
+            chargedAmount: 200,
+            date: "2022-01-01T21:00:00.000Z",
+          }),
+          buildExpense({
+            chargedAmount: 200,
+            date: "2022-03-01T21:00:00.000Z",
+          }),
         ]),
+    };
+    const businessRepository = {
+      getBusinesses: () => Promise.resolve({}),
+      setBusinesses: () => Promise.resolve(),
     };
     const result = await createExpenseReport(
       {
@@ -42,6 +51,9 @@ describe("Expense Report", () => {
       { fromDate: new Date(), credentials: {} }
     );
 
-    expect(result).toStrictEqual({ "Water Bill": { count: 2, total: 200 } });
+    expect(result).toStrictEqual({
+      January: { "Water Bill": { count: 2, total: 300 } },
+      March: { "Water Bill": { count: 1, total: 200 } },
+    });
   });
 });

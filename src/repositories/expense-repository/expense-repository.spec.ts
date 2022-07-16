@@ -46,8 +46,8 @@ describe("Expense Repository", () => {
       { fromDate: new Date() }
     );
     expect(result).toStrictEqual([
-      { businessName: "מי אביבים", amount: 100 },
-      { businessName: "מי אביבים", amount: 100 },
+      { businessName: "מי אביבים", amount: 100, date: "" },
+      { businessName: "מי אביבים", amount: 100, date: "" },
     ]);
   });
 });

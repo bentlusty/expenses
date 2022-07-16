@@ -48,7 +48,10 @@ export default async function generateReportCommand({
   ]);
 
   const { aggregatedExpenses } = await tasks.run();
-  console.table(aggregatedExpenses);
+  Object.entries(aggregatedExpenses).forEach(([month, report]) => {
+    console.log(chalk.bgGreen.bold(month));
+    console.table(report);
+  });
 
   console.log(chalk.green("Done"));
 }
