@@ -76,20 +76,18 @@ async function promptForMissingOptions(options: Options) {
 }
 
 export async function cli(args: string[]) {
-  console.log(chalk.green("Welcome to Expenses CLI"));
+  console.log(chalk.bold(chalk.green("Welcome to Expenses CLI")));
   const options = parseArgumentsIntoOptions(args);
 
   const { id, password, card6Digits, fromDate } = await promptForMissingOptions(
     options
   );
-  console.log(
-    chalk.green(
-      `Creating Expense Report for: ID: ${id}, \n
-      Date: ${fromDate} \n
-      Password: "***********" \n
-      Digits: ${card6Digits}`
-    )
-  );
+  console.log(chalk.underline(chalk.green("Creating Expense Report for:")));
+
+  console.log(chalk.greenBright(`ID: ${id}`));
+  console.log(chalk.greenBright(`Date: ${fromDate}`));
+  console.log(chalk.greenBright("Password: ***********"));
+  console.log(chalk.greenBright(`Digits: ${card6Digits}`));
 
   const aggregatedExpenses = await createExpenseReport(
     {
