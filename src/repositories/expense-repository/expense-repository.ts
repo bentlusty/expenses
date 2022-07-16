@@ -6,6 +6,7 @@ import { ScraperCredentials } from "israeli-bank-scrapers/lib/scrapers/base-scra
 export type Expense = {
   businessName: string;
   amount: number;
+  date: string;
 };
 
 export type Dependencies = {
@@ -33,6 +34,7 @@ export async function getAllExpenses(
   return expenses.map((expense) => ({
     businessName: expense.description,
     amount: expense.chargedAmount,
+    date: expense.date,
   }));
 }
 
