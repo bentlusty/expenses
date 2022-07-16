@@ -9,6 +9,10 @@ describe("Expense Repository", () => {
     const result = await getAllExpenses(
       {
         bankScraperClient: { get: () => [] },
+        businessRepository: {
+          getNormalizedBusinessName: () => Promise.resolve(""),
+          setNormalizedBusinessName: () => null,
+        },
       },
       { fromDate: new Date() }
     );
@@ -41,6 +45,10 @@ describe("Expense Repository", () => {
                 status: TransactionStatuses.Completed,
               },
             ]),
+        },
+        businessRepository: {
+          getNormalizedBusinessName: () => Promise.resolve(""),
+          setNormalizedBusinessName: () => null,
         },
       },
       { fromDate: new Date() }

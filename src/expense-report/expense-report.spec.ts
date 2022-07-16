@@ -4,6 +4,7 @@ import {
   TransactionTypes,
 } from "israeli-bank-scrapers/lib/transactions";
 import expenseRepository from "../repositories/expense-repository/expense-repository";
+import businessRepository from "../repositories/business-repository/business-repository";
 
 describe("Expense Report", () => {
   it("should display expense report flow", async () => {
@@ -36,6 +37,7 @@ describe("Expense Report", () => {
       {
         expenseRepository,
         bankScraperClient,
+        businessRepository,
       },
       { fromDate: new Date(), credentials: {} }
     );
