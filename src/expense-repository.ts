@@ -1,6 +1,7 @@
 import { BankScraperClient } from "./clients/bank-scraper-client";
 import { CompanyTypes } from "israeli-bank-scrapers";
 import { isracardCredentials } from "./config";
+import { ScraperCredentials } from "israeli-bank-scrapers/lib/scrapers/base-scraper";
 
 type Expense = {
   businessName: string;
@@ -13,15 +14,16 @@ type Dependencies = {
 
 type Props = {
   fromDate: Date;
+  credentials?: ScraperCredentials;
 };
 
 export async function getAllExpenses(
   { bankScraperClient }: Dependencies,
-  { fromDate }: Props
+  { fromDate, credentials }: Props
 ): Promise<Expense[]> {
   const expenses = await bankScraperClient.get({
     fromDate,
-    credentials: {
+    credentials: credentials || {
       id: isracardCredentials.ID,
       card6Digits: isracardCredentials.SIX_DIGITS,
       password: isracardCredentials.PASSWORD,
@@ -33,3 +35,9 @@ export async function getAllExpenses(
     amount: expense.chargedAmount,
   }));
 }
+
+const expenseRepository = {
+  getAllExpenses,
+};
+
+export default expenseRepository;

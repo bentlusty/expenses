@@ -32,6 +32,7 @@
     "validate": "run-p test lint typecheck"
   },
   "dependencies": {
+    "arg": "^5.0.2",
     "israeli-bank-scrapers": "^1.14.3",
     "typescript": "^4.7.4"
   },
