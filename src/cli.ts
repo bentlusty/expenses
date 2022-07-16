@@ -6,6 +6,7 @@ import Listr from "listr";
 import createExpenseReport from "./expense-report/expense-report";
 import bankScraperClient from "./clients/bank-scraper-client";
 import expenseRepository from "./repositories/expense-repository/expense-repository";
+import businessRepository from "./repositories/business-repository/business-repository";
 
 type Options = {
   id?: string;
@@ -98,6 +99,7 @@ export async function cli(args: string[]) {
           {
             expenseRepository,
             bankScraperClient,
+            businessRepository,
           },
           {
             fromDate: new Date(fromDate),

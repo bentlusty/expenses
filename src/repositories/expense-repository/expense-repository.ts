@@ -1,9 +1,10 @@
 import { CompanyTypes } from "israeli-bank-scrapers";
 import { isracardCredentials } from "../../config";
 import { Dependencies, Expense, Props } from "./types";
+import path from "path";
 
 export async function getAllExpenses(
-  { bankScraperClient }: Dependencies,
+  { bankScraperClient, businessRepository }: Dependencies,
   { fromDate, credentials }: Props
 ): Promise<Expense[]> {
   const expenses = await bankScraperClient.get({
@@ -15,10 +16,18 @@ export async function getAllExpenses(
     },
     company: CompanyTypes.isracard,
   });
-  return expenses.map((expense) => ({
-    businessName: expense.description,
-    amount: expense.chargedAmount,
-  }));
+  return Promise.all(
+    expenses.map(async (expense) => {
+      let businessName = await businessRepository.getNormalizedBusinessName({
+        originalBusinessName: expense.description,
+        path: path.join(__dirname, "../../../src/db/businesses.json"),
+      });
+      return {
+        businessName,
+        amount: expense.chargedAmount,
+      };
+    })
+  );
 }
 
 const expenseRepository = {

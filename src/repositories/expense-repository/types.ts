@@ -1,5 +1,6 @@
 import { BankScraperClient } from "../../clients/bank-scraper-client";
 import { ScraperCredentials } from "israeli-bank-scrapers/lib/scrapers/base-scraper";
+import { BusinessRepository } from "../business-repository/business-repository";
 
 export type Expense = {
   businessName: string;
@@ -8,6 +9,7 @@ export type Expense = {
 
 export type Dependencies = {
   bankScraperClient: BankScraperClient;
+  businessRepository: BusinessRepository;
 };
 
 export type Props = {
