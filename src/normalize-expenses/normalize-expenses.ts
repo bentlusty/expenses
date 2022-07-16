@@ -1,8 +1,9 @@
 import { ScraperCredentials } from "israeli-bank-scrapers/lib/scrapers/base-scraper";
-import { BankScraperClient } from "../clients/bank-scraper-client";
-import { ExpenseRepository } from "../repositories/expense-repository/types";
-import { BusinessRepository } from "../repositories/business-repository/business-repository";
+import BusinessRepository from "../repositories/business-repository/business-repository";
 import path from "path";
+import inquirer from "inquirer";
+import ExpenseRepository from "../repositories/expense-repository/expense-repository";
+import BankScraperClient from "../clients/bank-scraper-client";
 
 type Props = {
   fromDate: Date;
@@ -10,9 +11,9 @@ type Props = {
 };
 
 type Dependencies = {
-  bankScraperClient: BankScraperClient;
-  expenseRepository: ExpenseRepository;
-  businessRepository: BusinessRepository;
+  bankScraperClient: typeof BankScraperClient;
+  expenseRepository: typeof ExpenseRepository;
+  businessRepository: typeof BusinessRepository;
 };
 
 export default async function normalizeExpenses(
@@ -20,21 +21,34 @@ export default async function normalizeExpenses(
   { fromDate, credentials }: Props
 ) {
   const allExpenses = await expenseRepository.getAllExpenses(
-    { bankScraperClient, businessRepository },
+    { bankScraperClient },
     {
       fromDate,
       credentials,
     }
   );
+  let pathToJson = path.join(__dirname, "../../src/db/businesses.json");
+  const businesses = await businessRepository.getBusinesses(pathToJson);
 
   for (const expense of allExpenses) {
-    const normalizedBusinessName =
-      await businessRepository.getNormalizedBusinessName({
-        originalBusinessName: expense.businessName,
-        path: path.join(__dirname, "../src/db/businesses.json"),
-      });
-    if (!normalizedBusinessName) {
-      console.log("Found one!", expense);
+    if (!businesses[expense.businessName]) {
+      console.log(expense);
+      const answers = await inquirer.prompt([
+        {
+          type: "input",
+          name: "normalizedBusinessName",
+          message: "What should this expense be called?",
+        },
+      ]);
+      if (answers.normalizedBusinessName) {
+        businesses[expense.businessName] = answers.normalizedBusinessName;
+
+        console.log("Saved!", answers.normalizedBusinessName);
+      }
     }
   }
+  await businessRepository.setBusinesses(
+    path.join(__dirname, "../../src/db/businesses.json"),
+    businesses
+  );
 }

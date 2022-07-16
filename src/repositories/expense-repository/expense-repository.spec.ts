@@ -8,11 +8,7 @@ describe("Expense Repository", () => {
   it("should return empty list if no expenses found", async () => {
     const result = await getAllExpenses(
       {
-        bankScraperClient: { get: () => [] },
-        businessRepository: {
-          getNormalizedBusinessName: () => Promise.resolve(""),
-          setNormalizedBusinessName: () => null,
-        },
+        bankScraperClient: { get: () => Promise.resolve([]) },
       },
       { fromDate: new Date() }
     );
@@ -45,10 +41,6 @@ describe("Expense Repository", () => {
                 status: TransactionStatuses.Completed,
               },
             ]),
-        },
-        businessRepository: {
-          getNormalizedBusinessName: () => Promise.resolve(""),
-          setNormalizedBusinessName: () => null,
         },
       },
       { fromDate: new Date() }

@@ -2,8 +2,8 @@ import Listr from "listr";
 import createExpenseReport from "../expense-report/expense-report";
 import expenseRepository from "../repositories/expense-repository/expense-repository";
 import bankScraperClient from "../clients/bank-scraper-client";
-import businessRepository from "../repositories/business-repository/business-repository";
 import chalk from "chalk";
+import businessRepository from "../repositories/business-repository/business-repository";
 
 type Options = {
   id: string;

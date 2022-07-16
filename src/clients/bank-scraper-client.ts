@@ -8,10 +8,6 @@ type GetParams = {
   company: CompanyTypes;
 };
 
-export type BankScraperClient = {
-  get: (props: GetParams) => Promise<Transaction[]> | [];
-};
-
 async function get({
   fromDate,
   credentials,
@@ -35,7 +31,7 @@ async function get({
   return transactions;
 }
 
-const bankScraperClient: BankScraperClient = {
+const bankScraperClient = {
   get,
 };
 

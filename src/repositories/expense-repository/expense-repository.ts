@@ -1,10 +1,24 @@
 import { CompanyTypes } from "israeli-bank-scrapers";
 import { isracardCredentials } from "../../config";
-import { Dependencies, Expense, Props } from "./types";
-import path from "path";
+import BankScraperClient from "../../clients/bank-scraper-client";
+import { ScraperCredentials } from "israeli-bank-scrapers/lib/scrapers/base-scraper";
+
+export type Expense = {
+  businessName: string;
+  amount: number;
+};
+
+export type Dependencies = {
+  bankScraperClient: typeof BankScraperClient;
+};
+
+export type Props = {
+  fromDate: Date;
+  credentials?: ScraperCredentials;
+};
 
 export async function getAllExpenses(
-  { bankScraperClient, businessRepository }: Dependencies,
+  { bankScraperClient }: Dependencies,
   { fromDate, credentials }: Props
 ): Promise<Expense[]> {
   const expenses = await bankScraperClient.get({
@@ -16,18 +30,10 @@ export async function getAllExpenses(
     },
     company: CompanyTypes.isracard,
   });
-  return Promise.all(
-    expenses.map(async (expense) => {
-      const businessName = await businessRepository.getNormalizedBusinessName({
-        originalBusinessName: expense.description,
-        path: path.join(__dirname, "../../../src/db/businesses.json"),
-      });
-      return {
-        businessName: businessName || expense.description,
-        amount: expense.chargedAmount,
-      };
-    })
-  );
+  return expenses.map((expense) => ({
+    businessName: expense.description,
+    amount: expense.chargedAmount,
+  }));
 }
 
 const expenseRepository = {

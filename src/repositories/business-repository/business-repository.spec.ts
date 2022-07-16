@@ -18,28 +18,15 @@ describe("Business Repository", () => {
       JSON.stringify(originalBusinessNameToNormalized),
       "utf-8"
     );
-    const result = await businessRepository.getNormalizedBusinessName({
-      originalBusinessName,
-      path,
-    });
+    const result = await businessRepository.getBusinesses(path);
 
-    expect(result).toStrictEqual("Super Yoda");
+    expect(result).toStrictEqual({ [originalBusinessName]: "Super Yoda" });
   });
 
   it("should save a new Business Name", async () => {
-    const originalBusinessName = "Not Normalized";
-    await fs.writeFile(path, JSON.stringify({}), "utf-8");
+    await businessRepository.setBusinesses(path, { business: "10" });
 
-    await businessRepository.setNormalizedBusinessName({
-      originalBusinessName: originalBusinessName,
-      normalizedBusinessName: "Normalized",
-      path,
-    });
-
-    const expectedResult = await businessRepository.getNormalizedBusinessName({
-      path,
-      originalBusinessName,
-    });
-    expect(expectedResult).toBeTruthy();
+    const expectedResult = await fs.readFile(path, "utf-8");
+    expect(JSON.parse(expectedResult)).toStrictEqual({ business: "10" });
   });
 });
