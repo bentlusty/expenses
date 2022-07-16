@@ -3,13 +3,24 @@ type Expense = {
   amount: number;
 };
 
-export function aggregateExpenses(expenses: Expense[]) {
-  return expenses.reduce((aggregatedSumByName: any, expense: Expense) => {
-    if (!aggregatedSumByName[expense.businessName]) {
-      aggregatedSumByName[expense.businessName] = expense.amount;
-    } else {
-      aggregatedSumByName[expense.businessName] += expense.amount;
-    }
-    return aggregatedSumByName;
-  }, {});
+type AggregatedExpense = {
+  [key: string]: { total: number; count: number };
+};
+
+export function aggregateExpenses(expenses: Expense[]): AggregatedExpense {
+  return expenses.reduce(
+    (aggregatedSumByName: AggregatedExpense, expense: Expense) => {
+      if (!aggregatedSumByName[expense.businessName]) {
+        aggregatedSumByName[expense.businessName] = {
+          total: expense.amount,
+          count: 1,
+        };
+      } else {
+        aggregatedSumByName[expense.businessName].total += expense.amount;
+        aggregatedSumByName[expense.businessName].count += 1;
+      }
+      return aggregatedSumByName;
+    },
+    {}
+  );
 }

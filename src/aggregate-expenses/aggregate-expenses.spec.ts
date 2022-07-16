@@ -28,8 +28,8 @@ describe("Aggregate Expenses", () => {
     const result = aggregateExpenses(expenses);
 
     expect(result).toStrictEqual({
-      Water: 60,
-      Electricity: 220,
+      Water: { total: 60, count: 3 },
+      Electricity: { total: 220, count: 2 },
     });
   });
   it("should return an empty object if no expenses provided", () => {
