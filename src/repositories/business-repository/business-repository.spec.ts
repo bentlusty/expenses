@@ -7,6 +7,7 @@ describe("Business Repository", () => {
   afterEach(async () => {
     await fs.unlink(path);
   });
+
   it("should return an Original Business Name to normalize Business Name", async () => {
     const originalBusinessName = "סופר יודה";
     let originalBusinessNameToNormalized = {
@@ -23,5 +24,22 @@ describe("Business Repository", () => {
     });
 
     expect(result).toStrictEqual("Super Yoda");
+  });
+
+  it("should save a new Business Name", async () => {
+    const originalBusinessName = "Not Normalized";
+    await fs.writeFile(path, JSON.stringify({}), "utf-8");
+
+    await businessRepository.setNormalizedBusinessName({
+      originalBusinessName: originalBusinessName,
+      normalizedBusinessName: "Normalized",
+      path,
+    });
+
+    const expectedResult = await businessRepository.getNormalizedBusinessName({
+      path,
+      originalBusinessName,
+    });
+    expect(expectedResult).toBeTruthy();
   });
 });

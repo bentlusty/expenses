@@ -18,12 +18,12 @@ export async function getAllExpenses(
   });
   return Promise.all(
     expenses.map(async (expense) => {
-      let businessName = await businessRepository.getNormalizedBusinessName({
+      const businessName = await businessRepository.getNormalizedBusinessName({
         originalBusinessName: expense.description,
         path: path.join(__dirname, "../../../src/db/businesses.json"),
       });
       return {
-        businessName,
+        businessName: businessName || expense.description,
         amount: expense.chargedAmount,
       };
     })
