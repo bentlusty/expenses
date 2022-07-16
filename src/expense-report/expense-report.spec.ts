@@ -25,14 +25,22 @@ describe("Expense Report", () => {
       get: () =>
         Promise.resolve([
           buildExpense({
+            description: "Water Bill",
             chargedAmount: 100,
             date: "2022-01-01T21:00:00.000Z",
           }),
           buildExpense({
+            description: "Water Bill",
             chargedAmount: 200,
             date: "2022-01-01T21:00:00.000Z",
           }),
           buildExpense({
+            description: "Electricity Bill",
+            chargedAmount: 50,
+            date: "2022-01-01T21:00:00.000Z",
+          }),
+          buildExpense({
+            description: "Water Bill",
             chargedAmount: 200,
             date: "2022-03-01T21:00:00.000Z",
           }),
@@ -52,8 +60,14 @@ describe("Expense Report", () => {
     );
 
     expect(result).toStrictEqual({
-      January: { "Water Bill": { count: 2, total: 300 } },
-      March: { "Water Bill": { count: 1, total: 200 } },
+      January: {
+        data: {
+          "Water Bill": { count: 2, total: 300 },
+          "Electricity Bill": { count: 1, total: 50 },
+        },
+        total: 350,
+      },
+      March: { data: { "Water Bill": { count: 1, total: 200 } }, total: 200 },
     });
   });
 });

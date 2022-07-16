@@ -5,7 +5,7 @@ import BusinessRepository from "../repositories/business-repository/business-rep
 import BankScraperClient from "../clients/bank-scraper-client";
 import ExpenseRepository from "../repositories/expense-repository/expense-repository";
 
-type Report = {
+export type Report = {
   [key: string]: { total: number; count: number };
 };
 

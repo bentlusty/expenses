@@ -1,5 +1,5 @@
 import Listr from "listr";
-import createExpenseReport from "../expense-report/expense-report";
+import createExpenseReport, { Report } from "../expense-report/expense-report";
 import expenseRepository from "../repositories/expense-repository/expense-repository";
 import bankScraperClient from "../clients/bank-scraper-client";
 import chalk from "chalk";
@@ -48,10 +48,13 @@ export default async function generateReportCommand({
   ]);
 
   const { aggregatedExpenses } = await tasks.run();
-  Object.entries(aggregatedExpenses).forEach(([month, report]) => {
-    console.log(chalk.bgGreen.bold(month));
-    console.table(report);
-  });
+  Object.entries(aggregatedExpenses as Record<string, Report>).forEach(
+    ([month, report]) => {
+      console.log(chalk.bgGreen.bold(month));
+      console.table(report.data);
+      console.log(chalk.blueBright.italic(report.total));
+    }
+  );
 
   console.log(chalk.green("Done"));
 }

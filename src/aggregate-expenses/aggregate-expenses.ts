@@ -41,6 +41,10 @@ function aggregateExpenses(expenses: Expense[]): AggregatedExpense {
   );
 }
 
+function calculateTotalExpenses(expenses: Expense[]) {
+  return expenses.reduce((sum, expense) => sum + expense.amount, 0);
+}
+
 export function aggregateExpensesByMonth(expenses: Expense[]) {
   const aggregatedExpensesByMonth = expenses.reduce(
     (expensesByMonth: { [key: string]: Expense[] }, expense: Expense) => {
@@ -54,9 +58,16 @@ export function aggregateExpensesByMonth(expenses: Expense[]) {
     },
     {}
   );
-  const map = Object.entries(aggregatedExpensesByMonth).map(([key, value]) => {
-    const textualMonth = months[parseInt(key)];
-    return { [textualMonth]: aggregateExpenses(value) };
-  });
+  const map = Object.entries(aggregatedExpensesByMonth).map(
+    ([month, expenses]) => {
+      const textualMonth = months[parseInt(month)];
+      return {
+        [textualMonth]: {
+          data: aggregateExpenses(expenses),
+          total: calculateTotalExpenses(expenses),
+        },
+      };
+    }
+  );
   return Object.assign({}, ...map);
 }
