@@ -3,25 +3,20 @@ import chalk from "chalk";
 import expenseRepository from "../repositories/expense-repository/expense-repository";
 import bankScraperClient from "../clients/bank-scraper-client";
 import businessRepository from "../repositories/business-repository/business-repository";
-
-type Options = {
-  id: string;
-  password: string;
-  card6Digits: string;
-  fromDate: string;
-};
+import { Options } from "./cli";
 
 export default async function normalizeCommand({
-  id,
-  password,
-  card6Digits,
+  provider,
   fromDate,
+  credentials,
 }: Options) {
-  console.log(chalk.green.italic("About to start Normalizing expenses"));
-  console.log(chalk.greenBright(`ID: ${id}`));
-  console.log(chalk.greenBright(`Date: ${fromDate}`));
-  console.log(chalk.greenBright("Password: ***********"));
-  console.log(chalk.greenBright(`Digits: ${card6Digits}`));
+  console.log(
+    chalk.green.underline(
+      `Normalizing Expenses for: ${chalk.bold(
+        provider
+      )} from date: ${chalk.bold(fromDate)}`
+    )
+  );
   await normalizeExpenses(
     {
       expenseRepository,
@@ -30,11 +25,8 @@ export default async function normalizeCommand({
     },
     {
       fromDate: new Date(fromDate),
-      credentials: {
-        id,
-        card6Digits,
-        password,
-      },
+      credentials,
+      provider,
     }
   );
   console.log(chalk.green.italic("Finished Normalizing expenses"));

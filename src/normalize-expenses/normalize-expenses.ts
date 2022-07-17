@@ -4,10 +4,12 @@ import path from "path";
 import inquirer from "inquirer";
 import ExpenseRepository from "../repositories/expense-repository/expense-repository";
 import BankScraperClient from "../clients/bank-scraper-client";
+import { CompanyTypes } from "israeli-bank-scrapers";
 
 type Props = {
   fromDate: Date;
   credentials: ScraperCredentials;
+  provider: CompanyTypes;
 };
 
 type Dependencies = {
@@ -18,13 +20,14 @@ type Dependencies = {
 
 export default async function normalizeExpenses(
   { expenseRepository, bankScraperClient, businessRepository }: Dependencies,
-  { fromDate, credentials }: Props
+  { fromDate, credentials, provider }: Props
 ) {
   const allExpenses = await expenseRepository.getAllExpenses(
     { bankScraperClient },
     {
       fromDate,
       credentials,
+      provider,
     }
   );
   const pathToJson = path.join(__dirname, "../../src/db/businesses.json");

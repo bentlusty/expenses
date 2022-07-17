@@ -1,47 +1,83 @@
 import chalk from "chalk";
-import yargs, { ArgumentsCamelCase } from "yargs";
+import yargs, { Arguments } from "yargs";
 import { hideBin } from "yargs/helpers";
 import generateReportCommand from "./generate-report.command";
 import normalizeCommand from "./normalize.command";
 import inquirer from "inquirer";
+import { CompanyTypes } from "israeli-bank-scrapers/lib/definitions";
+import { SCRAPERS } from "israeli-bank-scrapers";
 
-async function promptForMissingOptions(options: ArgumentsCamelCase) {
+export type Arg = {
+  provider?: CompanyTypes;
+  from?: string;
+};
+export type Options = {
+  provider: CompanyTypes;
+  fromDate: string;
+  credentials: any;
+};
+
+function askForProvider() {
+  return {
+    type: "list",
+    name: "provider",
+    message: "What is your Provider?",
+    choices: () =>
+      Object.entries(CompanyTypes).map(([key, value]) => ({
+        name: key,
+        value,
+      })),
+    validate: (value: string) => !!value || "Required Field!",
+  };
+}
+function askForFromDate() {
+  return {
+    type: "input",
+    name: "from",
+    message: "From which date should I calculate? Format: YYYY-MM-DD",
+    validate: (value: string) => {
+      if (!Date.parse(value)) {
+        return "Not Valid date";
+      }
+      return !!value;
+    },
+  };
+}
+function askForCredentialsField(field: string) {
+  return {
+    type: field === "password" ? "password" : "input",
+    name: field,
+    message: field,
+    validate: (value: string) => !!value || "Required Field!",
+  };
+}
+
+async function promptForMissingOptions(options: Arguments<Arg>) {
   const questions = [];
-  if (!options.id) {
-    questions.push({
-      type: "input",
-      name: "id",
-      message: "What is your ID (Teodat Zehut)?",
-    });
-  }
-  if (!options.digits) {
-    questions.push({
-      type: "input",
-      name: "card6Digits",
-      message: "What is your 6 Card Digits?",
-    });
-  }
-  if (!options.password) {
-    questions.push({
-      type: "password",
-      name: "password",
-      message: "What is your password?",
-    });
-  }
   if (!options.from) {
-    questions.push({
-      type: "input",
-      name: "fromDate",
-      message: "From which date should I calculate?",
-    });
+    questions.push(askForFromDate());
   }
 
+  if (!options.provider) {
+    questions.push(askForProvider());
+  }
   const answers = await inquirer.prompt(questions);
+  const provider = options.provider || answers.provider;
+  let scraperProvider = SCRAPERS[provider as CompanyTypes];
+  console.log(
+    chalk.bgBlueBright.black(
+      `Please provide additional credentials for: ${scraperProvider.name}`
+    )
+  );
+  const credentialsQuestions = scraperProvider.loginFields.map(
+    askForCredentialsField
+  );
+
+  const credentials = await inquirer.prompt(credentialsQuestions);
 
   return {
-    id: options.id || answers.id,
-    card6Digits: options.digits || answers.digits,
-    password: options.password || answers.password,
+    provider,
+    credentials,
     fromDate: options.from || answers.from,
   };
 }
@@ -56,17 +92,8 @@ export async function cli(args: string[]) {
       "Go over unverified expenses and normalize them",
       (yargs) => {
         return yargs
-          .option("id", {
-            describe: "The 'Teodat Zehut'",
-            type: "number",
-          })
-          .option("digits", {
-            describe: "Last six digits of the credit card",
-            type: "number",
-          })
-          .option("password", {
-            describe: "The password to connect to Isracard",
-            type: "string",
+          .option("provider", {
+            choices: Object.values(CompanyTypes),
           })
           .option("from", {
             describe: "The date that we should start gathering the data from",
@@ -83,17 +110,8 @@ export async function cli(args: string[]) {
       "Generate a report with your Visa credit card company",
       (yargs) => {
         return yargs
-          .option("id", {
-            describe: "The 'Teodat Zehut'",
-            type: "number",
-          })
-          .option("digits", {
-            describe: "Last six digits of the credit card",
-            type: "number",
-          })
-          .option("password", {
-            describe: "The password to connect to Isracard",
-            type: "string",
+          .option("provider", {
+            choices: Object.values(CompanyTypes),
           })
           .option("from", {
             describe: "The date that we should start gathering the data from",
@@ -106,6 +124,5 @@ export async function cli(args: string[]) {
       }
     )
     .help()
-    .demandCommand()
     .parse();
 }

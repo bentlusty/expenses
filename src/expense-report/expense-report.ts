@@ -4,6 +4,7 @@ import path from "path";
 import BusinessRepository from "../repositories/business-repository/business-repository";
 import BankScraperClient from "../clients/bank-scraper-client";
 import ExpenseRepository from "../repositories/expense-repository/expense-repository";
+import { CompanyTypes } from "israeli-bank-scrapers/lib/definitions";
 
 export type AggregatedExpense = {
   total: number;
@@ -28,17 +29,19 @@ type Dependencies = {
 type Props = {
   fromDate: Date;
   credentials: ScraperCredentials;
+  provider: CompanyTypes;
 };
 
 export default async function createExpenseReport(
   { expenseRepository, bankScraperClient, businessRepository }: Dependencies,
-  { fromDate, credentials }: Props
+  { fromDate, credentials, provider }: Props
 ): Promise<Report> {
   const allExpenses = await expenseRepository.getAllExpenses(
     { bankScraperClient },
     {
       fromDate,
       credentials,
+      provider,
     }
   );
   const pathToJson = path.join(__dirname, "../../src/db/businesses.json");

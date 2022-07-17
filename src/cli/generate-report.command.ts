@@ -6,13 +6,7 @@ import expenseRepository from "../repositories/expense-repository/expense-reposi
 import bankScraperClient from "../clients/bank-scraper-client";
 import chalk from "chalk";
 import businessRepository from "../repositories/business-repository/business-repository";
-
-type Options = {
-  id: string;
-  password: string;
-  card6Digits: string;
-  fromDate: string;
-};
+import { Options } from "./cli";
 
 function prettifyReport(month: string, report: MonthlyReport) {
   console.log(chalk.bgGreen.bold(`Month: ${month}`));
@@ -21,16 +15,17 @@ function prettifyReport(month: string, report: MonthlyReport) {
 }
 
 export default async function generateReportCommand({
-  id,
-  password,
-  card6Digits,
+  provider,
+  credentials,
   fromDate,
 }: Options) {
-  console.log(chalk.green.underline("Creating Expense Report for:"));
-  console.log(chalk.greenBright(`ID: ${id}`));
-  console.log(chalk.greenBright(`Date: ${fromDate}`));
-  console.log(chalk.greenBright("Password: ***********"));
-  console.log(chalk.greenBright(`Digits: ${card6Digits}`));
+  console.log(
+    chalk.green.underline(
+      `Creating Expense Report for: ${chalk.bold(
+        provider
+      )} from date: ${chalk.bold(fromDate)}`
+    )
+  );
 
   const tasks = new Listr([
     {
@@ -44,11 +39,8 @@ export default async function generateReportCommand({
           },
           {
             fromDate: new Date(fromDate),
-            credentials: {
-              id,
-              card6Digits,
-              password,
-            },
+            credentials,
+            provider,
           }
         );
       },

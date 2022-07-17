@@ -18,6 +18,7 @@ async function get({
     startDate: fromDate,
     combineInstallments: false,
     showBrowser: false,
+    verbose: false,
   };
   const scraper = createScraper(options);
   const transactions: Transaction[] = [];
