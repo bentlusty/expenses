@@ -23,23 +23,16 @@ async function get({
   const scraper = createScraper(options);
   const transactions: Transaction[] = [];
 
-  try {
-    const scrapeResult = await scraper.scrape(credentials);
-    if (scrapeResult.success) {
-      scrapeResult.accounts?.forEach((account) =>
-        transactions.push(...account.txns)
-      );
-    } else {
-      console.error("`Error fetching data", {
-        company,
-        type: scrapeResult.errorType,
-        message: scrapeResult.errorMessage,
-      });
-    }
-  } catch (error: any) {
-    console.error("`Error was thrown fetching data", {
+  const scrapeResult = await scraper.scrape(credentials);
+  if (scrapeResult.success) {
+    scrapeResult.accounts?.forEach((account) =>
+      transactions.push(...account.txns)
+    );
+  } else {
+    console.error("`Error fetching data", {
       company,
-      message: error?.message,
+      type: scrapeResult.errorType,
+      message: scrapeResult.errorMessage,
     });
   }
 

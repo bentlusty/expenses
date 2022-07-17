@@ -14,7 +14,7 @@ export type Arg = {
 export type Options = {
   provider: CompanyTypes;
   fromDate: string;
-  credentials: any;
+  credentials: Record<string, string>;
 };
 
 function askForProvider() {
@@ -63,7 +63,7 @@ async function promptForMissingOptions(options: Arguments<Arg>) {
   }
   const answers = await inquirer.prompt(questions);
   const provider = options.provider || answers.provider;
-  let scraperProvider = SCRAPERS[provider as CompanyTypes];
+  const scraperProvider = SCRAPERS[provider as CompanyTypes];
   console.log(
     chalk.bgBlueBright.black(
       `Please provide additional credentials for: ${scraperProvider.name}`
