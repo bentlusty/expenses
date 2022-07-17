@@ -20,14 +20,28 @@ async function get({
     showBrowser: false,
   };
   const scraper = createScraper(options);
-
-  const scrapeResult = await scraper.scrape(credentials);
   const transactions: Transaction[] = [];
-  if (scrapeResult.success) {
-    scrapeResult.accounts?.forEach((account) =>
-      transactions.push(...account.txns)
-    );
+
+  try {
+    const scrapeResult = await scraper.scrape(credentials);
+    if (scrapeResult.success) {
+      scrapeResult.accounts?.forEach((account) =>
+        transactions.push(...account.txns)
+      );
+    } else {
+      console.error("`Error fetching data", {
+        company,
+        type: scrapeResult.errorType,
+        message: scrapeResult.errorMessage,
+      });
+    }
+  } catch (error: any) {
+    console.error("`Error was thrown fetching data", {
+      company,
+      message: error?.message,
+    });
   }
+
   return transactions;
 }
 

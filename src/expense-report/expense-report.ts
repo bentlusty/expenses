@@ -5,8 +5,18 @@ import BusinessRepository from "../repositories/business-repository/business-rep
 import BankScraperClient from "../clients/bank-scraper-client";
 import ExpenseRepository from "../repositories/expense-repository/expense-repository";
 
+export type AggregatedExpense = {
+  total: number;
+  count: number;
+};
+
+export type MonthlyReport = {
+  data: AggregatedExpense[];
+  total: number;
+};
+
 export type Report = {
-  [key: string]: { total: number; count: number };
+  [key: string]: MonthlyReport;
 };
 
 type Dependencies = {
@@ -23,7 +33,7 @@ type Props = {
 export default async function createExpenseReport(
   { expenseRepository, bankScraperClient, businessRepository }: Dependencies,
   { fromDate, credentials }: Props
-): Promise<{ [key: string]: Report }[]> {
+): Promise<Report> {
   const allExpenses = await expenseRepository.getAllExpenses(
     { bankScraperClient },
     {

@@ -1,3 +1,5 @@
+import { Report } from "../expense-report/expense-report";
+
 type Expense = {
   businessName: string;
   amount: number;
@@ -45,7 +47,7 @@ function calculateTotalExpenses(expenses: Expense[]) {
   return expenses.reduce((sum, expense) => sum + expense.amount, 0);
 }
 
-export function aggregateExpensesByMonth(expenses: Expense[]) {
+export function aggregateExpensesByMonth(expenses: Expense[]): Report {
   const aggregatedExpensesByMonth = expenses.reduce(
     (expensesByMonth: { [key: string]: Expense[] }, expense: Expense) => {
       const month = expense.date.getMonth();
