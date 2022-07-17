@@ -1,10 +1,13 @@
-import { aggregateExpensesByMonth } from "../aggregate-expenses/aggregate-expenses";
-import { ScraperCredentials } from "israeli-bank-scrapers/lib/scrapers/base-scraper";
 import path from "path";
-import BusinessRepository from "../repositories/business-repository/business-repository";
+import { aggregateExpensesByMonth } from "../aggregate-expenses/aggregate-expenses";
+import BusinessRepository, {
+  Businesses,
+} from "../repositories/business-repository/business-repository";
 import BankScraperClient from "../clients/bank-scraper-client";
-import ExpenseRepository from "../repositories/expense-repository/expense-repository";
-import { CompanyTypes } from "israeli-bank-scrapers/lib/definitions";
+import ExpenseRepository, {
+  Expense,
+} from "../repositories/expense-repository/expense-repository";
+import { Option } from "../cli/cli";
 
 export type AggregatedExpense = {
   total: number;
@@ -26,39 +29,33 @@ type Dependencies = {
   businessRepository: typeof BusinessRepository;
 };
 
-type Props = {
-  fromDate: Date;
-  credentials: ScraperCredentials;
-  provider: CompanyTypes;
-};
+const PATH_TO_BUSINESS_DB = path.join(
+  __dirname,
+  "../../src/db/businesses.json"
+);
+
+function normalize(expenses: Expense[], businesses: Businesses) {
+  return expenses.map((expense) => ({
+    businessName: businesses[expense.businessName]
+      ? businesses[expense.businessName]
+      : expense.businessName,
+    amount: expense.amount,
+    date: new Date(expense.date),
+  }));
+}
 
 export default async function createExpenseReport(
   { expenseRepository, bankScraperClient, businessRepository }: Dependencies,
-  { fromDate, credentials, provider }: Props
+  options: Option[]
 ): Promise<Report> {
   const allExpenses = await expenseRepository.getAllExpenses(
     { bankScraperClient },
-    {
-      fromDate,
-      credentials,
-      provider,
-    }
+    options
   );
-  const pathToJson = path.join(__dirname, "../../src/db/businesses.json");
 
-  const businesses = await businessRepository.getBusinesses(pathToJson);
-  const expenses = allExpenses.map((expense) =>
-    businesses[expense.businessName]
-      ? {
-          businessName: businesses[expense.businessName],
-          amount: expense.amount,
-          date: new Date(expense.date),
-        }
-      : {
-          businessName: expense.businessName,
-          amount: expense.amount,
-          date: new Date(expense.date),
-        }
+  const businesses = await businessRepository.getBusinesses(
+    PATH_TO_BUSINESS_DB
   );
+  const expenses = normalize(allExpenses, businesses);
   return aggregateExpensesByMonth(expenses);
 }

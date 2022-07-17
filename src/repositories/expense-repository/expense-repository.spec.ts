@@ -1,4 +1,4 @@
-import { getAllExpenses } from "./expense-repository";
+import expenseRepository from "./expense-repository";
 import {
   TransactionStatuses,
   TransactionTypes,
@@ -7,16 +7,22 @@ import { CompanyTypes } from "israeli-bank-scrapers";
 
 describe("Expense Repository", () => {
   it("should return empty list if no expenses found", async () => {
-    const result = await getAllExpenses(
+    const result = await expenseRepository.getAllExpenses(
       {
         bankScraperClient: { get: () => Promise.resolve([]) },
       },
-      { fromDate: new Date(), credentials: {}, provider: CompanyTypes.isracard }
+      [
+        {
+          fromDate: new Date(),
+          credentials: {},
+          provider: CompanyTypes.isracard,
+        },
+      ]
     );
     expect(result).toStrictEqual([]);
   });
   it("should return expenses list if found", async () => {
-    const result = await getAllExpenses(
+    const result = await expenseRepository.getAllExpenses(
       {
         bankScraperClient: {
           get: () =>
@@ -44,7 +50,13 @@ describe("Expense Repository", () => {
             ]),
         },
       },
-      { fromDate: new Date(), credentials: {}, provider: CompanyTypes.isracard }
+      [
+        {
+          fromDate: new Date(),
+          credentials: {},
+          provider: CompanyTypes.isracard,
+        },
+      ]
     );
     expect(result).toStrictEqual([
       { businessName: "מי אביבים", amount: 100, date: "" },

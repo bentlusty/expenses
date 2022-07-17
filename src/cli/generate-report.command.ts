@@ -6,7 +6,7 @@ import expenseRepository from "../repositories/expense-repository/expense-reposi
 import bankScraperClient from "../clients/bank-scraper-client";
 import chalk from "chalk";
 import businessRepository from "../repositories/business-repository/business-repository";
-import { Options } from "./cli";
+import { Option } from "./cli";
 
 function prettifyReport(month: string, report: MonthlyReport) {
   console.log(chalk.bgGreen.bold(`Month: ${month}`));
@@ -14,19 +14,7 @@ function prettifyReport(month: string, report: MonthlyReport) {
   console.log(chalk.blueBright.italic(report.total));
 }
 
-export default async function generateReportCommand({
-  provider,
-  credentials,
-  fromDate,
-}: Options) {
-  console.log(
-    chalk.green.underline(
-      `Creating Expense Report for: ${chalk.bold(
-        provider
-      )} from date: ${chalk.bold(fromDate)}`
-    )
-  );
-
+export default async function generateReportCommand(options: Option[]) {
   const tasks = new Listr([
     {
       title: "Creating Expense Report",
@@ -37,11 +25,7 @@ export default async function generateReportCommand({
             bankScraperClient,
             businessRepository,
           },
-          {
-            fromDate: new Date(fromDate),
-            credentials,
-            provider,
-          }
+          options
         );
       },
     },

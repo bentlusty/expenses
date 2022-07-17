@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import yargs, { Arguments } from "yargs";
+import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import generateReportCommand from "./generate-report.command";
 import normalizeCommand from "./normalize.command";
@@ -7,42 +7,47 @@ import inquirer from "inquirer";
 import { CompanyTypes } from "israeli-bank-scrapers/lib/definitions";
 import { SCRAPERS } from "israeli-bank-scrapers";
 
-export type Arg = {
-  provider?: CompanyTypes;
-  from?: string;
-};
-export type Options = {
+export type Option = {
   provider: CompanyTypes;
-  fromDate: string;
+  fromDate: Date;
   credentials: Record<string, string>;
 };
 
-function askForProvider() {
-  return {
-    type: "list",
-    name: "provider",
-    message: "What is your Provider?",
-    choices: () =>
-      Object.entries(CompanyTypes).map(([key, value]) => ({
-        name: key,
-        value,
-      })),
-    validate: (value: string) => !!value || "Required Field!",
-  };
-}
-function askForFromDate() {
-  return {
-    type: "input",
-    name: "from",
-    message: "From which date should I calculate? Format: YYYY-MM-DD",
-    validate: (value: string) => {
-      if (!Date.parse(value)) {
-        return "Not Valid date";
-      }
-      return !!value;
+async function askForFromDate(fromOption?: string) {
+  if (fromOption) return { fromDate: fromOption };
+  const questions = [
+    {
+      type: "input",
+      name: "fromDate",
+      message: "From which date should I calculate? Format: YYYY-MM-DD",
+      validate: (value: string) => {
+        if (!Date.parse(value)) {
+          return "Not Valid date";
+        }
+        return !!value;
+      },
     },
-  };
+  ];
+
+  return inquirer.prompt(questions);
 }
+
+async function askForMoreProviders() {
+  const questions = [
+    {
+      type: "list",
+      choices: [
+        { name: "Yes", value: true },
+        { name: "No", value: false },
+      ],
+      name: "shouldPromptForMoreProvider",
+      message: "Do you want to add another Business Provider?",
+    },
+  ];
+
+  return inquirer.prompt(questions);
+}
+
 function askForCredentialsField(field: string) {
   return {
     type: field === "password" ? "password" : "input",
@@ -52,17 +57,21 @@ function askForCredentialsField(field: string) {
   };
 }
 
-async function promptForMissingOptions(options: Arguments<Arg>) {
-  const questions = [];
-  if (!options.from) {
-    questions.push(askForFromDate());
-  }
-
-  if (!options.provider) {
-    questions.push(askForProvider());
-  }
-  const answers = await inquirer.prompt(questions);
-  const provider = options.provider || answers.provider;
+async function promptForMissingOptions(fromDate: string) {
+  const questions = [
+    {
+      type: "list",
+      name: "provider",
+      message: "What is your Provider?",
+      choices: () =>
+        Object.entries(CompanyTypes).map(([key, value]) => ({
+          name: key,
+          value,
+        })),
+      validate: (value: string) => !!value || "Required Field!",
+    },
+  ];
+  const { provider } = await inquirer.prompt(questions);
   const scraperProvider = SCRAPERS[provider as CompanyTypes];
   console.log(
     chalk.bgBlueBright.black(
@@ -78,8 +87,22 @@ async function promptForMissingOptions(options: Arguments<Arg>) {
   return {
     provider,
     credentials,
-    fromDate: options.from || answers.from,
+    fromDate: new Date(fromDate),
   };
+}
+
+async function getOptions(argv: { from?: string }) {
+  const { fromDate } = await askForFromDate(argv.from);
+  const option = await promptForMissingOptions(fromDate);
+  const options = [option];
+
+  let { shouldPromptForMoreProvider } = await askForMoreProviders();
+  while (shouldPromptForMoreProvider) {
+    options.push(await promptForMissingOptions(fromDate));
+    const result = await askForMoreProviders();
+    shouldPromptForMoreProvider = result.shouldPromptForMoreProvider;
+  }
+  return options;
 }
 
 export async function cli(args: string[]) {
@@ -101,7 +124,7 @@ export async function cli(args: string[]) {
           });
       },
       async (argv) => {
-        const options = await promptForMissingOptions(argv);
+        const options = await getOptions(argv);
         await normalizeCommand(options);
       }
     )
@@ -109,17 +132,13 @@ export async function cli(args: string[]) {
       "generate-report",
       "Generate a report with your Visa credit card company",
       (yargs) => {
-        return yargs
-          .option("provider", {
-            choices: Object.values(CompanyTypes),
-          })
-          .option("from", {
-            describe: "The date that we should start gathering the data from",
-            type: "string",
-          });
+        return yargs.option("from", {
+          describe: "The date that we should start gathering the data from",
+          type: "string",
+        });
       },
       async (argv) => {
-        const options = await promptForMissingOptions(argv);
+        const options = await getOptions(argv);
         await generateReportCommand(options);
       }
     )

@@ -57,18 +57,29 @@ describe("Expense Report", () => {
         bankScraperClient,
         businessRepository,
       },
-      { fromDate: new Date(), credentials: {}, provider: CompanyTypes.isracard }
+      [
+        {
+          fromDate: new Date(),
+          credentials: {},
+          provider: CompanyTypes.isracard,
+        },
+        {
+          fromDate: new Date(),
+          credentials: {},
+          provider: CompanyTypes.max,
+        },
+      ]
     );
 
     expect(result).toStrictEqual({
       January: {
         data: {
-          "Water Bill": { count: 2, total: 300 },
-          "Electricity Bill": { count: 1, total: 50 },
+          "Water Bill": { count: 4, total: 600 },
+          "Electricity Bill": { count: 2, total: 100 },
         },
-        total: 350,
+        total: 700,
       },
-      March: { data: { "Water Bill": { count: 1, total: 200 } }, total: 200 },
+      March: { data: { "Water Bill": { count: 2, total: 400 } }, total: 400 },
     });
   });
 });

@@ -1,6 +1,5 @@
-import { CompanyTypes } from "israeli-bank-scrapers";
 import BankScraperClient from "../../clients/bank-scraper-client";
-import { ScraperCredentials } from "israeli-bank-scrapers/lib/scrapers/base-scraper";
+import { Option } from "../../cli/cli";
 
 export type Expense = {
   businessName: string;
@@ -8,19 +7,13 @@ export type Expense = {
   date: string;
 };
 
-export type Dependencies = {
-  bankScraperClient: typeof BankScraperClient;
-};
-
-export type Props = {
-  fromDate: Date;
-  credentials: ScraperCredentials;
-  provider: CompanyTypes;
-};
-
-export async function getAllExpenses(
-  { bankScraperClient }: Dependencies,
-  { fromDate, credentials, provider }: Props
+async function getExpenses(
+  {
+    bankScraperClient,
+  }: {
+    bankScraperClient: typeof BankScraperClient;
+  },
+  { fromDate, credentials, provider }: Option
 ): Promise<Expense[]> {
   const expenses = await bankScraperClient.get({
     fromDate,
@@ -32,6 +25,21 @@ export async function getAllExpenses(
     amount: expense.chargedAmount,
     date: expense.date,
   }));
+}
+
+async function getAllExpenses(
+  {
+    bankScraperClient,
+  }: {
+    bankScraperClient: typeof BankScraperClient;
+  },
+  options: Option[]
+): Promise<Expense[]> {
+  const allExpenses = [];
+  for (const option of options) {
+    allExpenses.push(await getExpenses({ bankScraperClient }, option));
+  }
+  return allExpenses.flat();
 }
 
 const expenseRepository = {

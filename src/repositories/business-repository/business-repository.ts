@@ -1,6 +1,6 @@
 import * as fs from "fs";
 
-type Businesses = {
+export type Businesses = {
   [key: string]: string;
 };
 
