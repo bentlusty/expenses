@@ -4,6 +4,7 @@ import {
   TransactionTypes,
 } from "israeli-bank-scrapers/lib/transactions";
 import expenseRepository from "../repositories/expense-repository/expense-repository";
+import { CompanyTypes } from "israeli-bank-scrapers";
 
 function buildExpense(overrides?: Record<string, unknown>) {
   return {
@@ -56,7 +57,7 @@ describe("Expense Report", () => {
         bankScraperClient,
         businessRepository,
       },
-      { fromDate: new Date(), credentials: {} }
+      { fromDate: new Date(), credentials: {}, provider: CompanyTypes.isracard }
     );
 
     expect(result).toStrictEqual({
