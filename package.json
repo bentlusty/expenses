@@ -33,7 +33,7 @@
     "chalk": "^4.1.2",
     "inquirer": "^8.0.0",
     "israeli-bank-scrapers": "^1.14.3",
-    "listr": "^0.14.3",
+    "ora": "^5.4.1",
     "typescript": "^4.7.4",
     "yargs": "^17.5.1"
   },

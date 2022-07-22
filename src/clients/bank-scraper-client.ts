@@ -26,7 +26,12 @@ async function get({
   const scrapeResult = await scraper.scrape(credentials);
   if (scrapeResult.success) {
     scrapeResult.accounts?.forEach((account) =>
-      transactions.push(...account.txns)
+      transactions.push(
+        ...account.txns.filter(
+          (transaction) =>
+            new Date(transaction.date).getMonth() === fromDate.getMonth()
+        )
+      )
     );
   } else {
     console.error("`Error fetching data", {

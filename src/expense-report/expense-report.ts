@@ -1,13 +1,6 @@
-import path from "path";
-import { aggregateExpensesByMonth } from "../aggregate-expenses/aggregate-expenses";
-import BusinessRepository, {
-  Businesses,
-} from "../repositories/business-repository/business-repository";
-import BankScraperClient from "../clients/bank-scraper-client";
-import ExpenseRepository, {
-  Expense,
-} from "../repositories/expense-repository/expense-repository";
-import { Option } from "../cli/cli";
+import { Businesses } from "../repositories/business-repository/business-repository";
+import { Expense } from "../repositories/expense-repository/expense-repository";
+import { CompanyTypes } from "israeli-bank-scrapers/lib/definitions";
 
 export type AggregatedExpense = {
   total: number;
@@ -23,39 +16,50 @@ export type Report = {
   [key: string]: MonthlyReport;
 };
 
-type Dependencies = {
-  bankScraperClient: typeof BankScraperClient;
-  expenseRepository: typeof ExpenseRepository;
-  businessRepository: typeof BusinessRepository;
-};
-
-const PATH_TO_BUSINESS_DB = path.join(
-  __dirname,
-  "../../src/db/businesses.json"
-);
-
-function normalize(expenses: Expense[], businesses: Businesses) {
-  return expenses.map((expense) => ({
-    businessName: businesses[expense.businessName]
-      ? businesses[expense.businessName]
-      : expense.businessName,
-    amount: expense.amount,
-    date: new Date(expense.date),
-  }));
+export function combineExpenses(
+  expenses: Record<string, Expense[]>
+): Expense[] {
+  return Object.values(expenses).flat();
 }
 
-export default async function createExpenseReport(
-  { expenseRepository, bankScraperClient, businessRepository }: Dependencies,
-  options: Option[]
-): Promise<Report> {
-  const allExpenses = await expenseRepository.getAllExpenses(
-    { bankScraperClient },
-    options
-  );
+export function normalize(
+  expenses: Record<string, Expense[]>,
+  businesses: Businesses
+) {
+  const normalizedExpenses: Record<string, Expense[]> = {};
 
-  const businesses = await businessRepository.getBusinesses(
-    PATH_TO_BUSINESS_DB
+  Object.entries(expenses).forEach(([provider, expenses]) => {
+    normalizedExpenses[provider] = expenses.map((expense) => ({
+      businessName: businesses[expense.businessName]
+        ? businesses[expense.businessName]
+        : expense.businessName,
+      amount: expense.amount,
+      date: expense.date,
+    }));
+  });
+  return normalizedExpenses;
+}
+
+export function validateCreditCards(expenses: Record<string, Expense[]>) {
+  const totalCreditCardAmount = expenses[CompanyTypes.isracard].reduce(
+    (aggregatedExpense, expense) => aggregatedExpense + expense.amount,
+    0
   );
-  const expenses = normalize(allExpenses, businesses);
-  return aggregateExpensesByMonth(expenses);
+  const totalCreditCardAmountFromBank = expenses[CompanyTypes.hapoalim].reduce(
+    (aggregatedExpense, expense) => {
+      if (expense.businessName === "Isracard") {
+        return aggregatedExpense + expense.amount;
+      }
+      return aggregatedExpense;
+    },
+    0
+  );
+  if (totalCreditCardAmount === 0) {
+    throw new Error("Isracard expenses should not be zero");
+  }
+  if (totalCreditCardAmountFromBank === 0) {
+    throw new Error("Isracard expense from bank should not be zero");
+  }
+
+  return totalCreditCardAmount === totalCreditCardAmountFromBank;
 }

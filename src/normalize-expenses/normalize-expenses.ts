@@ -21,23 +21,25 @@ const PATH_TO_BUSINESS_DB = path.join(
 );
 
 async function askForBusinessesNames(
-  allExpenses: Expense[],
+  allExpenses: Record<string, Expense[]>,
   businesses: Businesses
 ) {
-  for (const expense of allExpenses) {
-    if (!businesses[expense.businessName]) {
-      console.log(expense);
-      const answers = await inquirer.prompt([
-        {
-          type: "input",
-          name: "normalizedBusinessName",
-          message: "What should this expense be called?",
-        },
-      ]);
-      if (answers.normalizedBusinessName) {
-        businesses[expense.businessName] = answers.normalizedBusinessName;
+  for (const expenses of Object.values(allExpenses)) {
+    for (const expense of expenses) {
+      if (!businesses[expense.businessName]) {
+        console.log(expense);
+        const answers = await inquirer.prompt([
+          {
+            type: "input",
+            name: "normalizedBusinessName",
+            message: "What should this expense be called?",
+          },
+        ]);
+        if (answers.normalizedBusinessName) {
+          businesses[expense.businessName] = answers.normalizedBusinessName;
 
-        console.log("Saved!", answers.normalizedBusinessName);
+          console.log("Saved!", answers.normalizedBusinessName);
+        }
       }
     }
   }

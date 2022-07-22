@@ -4,7 +4,7 @@ import { Option } from "../../cli/cli";
 export type Expense = {
   businessName: string;
   amount: number;
-  date: string;
+  date: Date;
 };
 
 async function getExpenses(
@@ -23,7 +23,7 @@ async function getExpenses(
   return expenses.map((expense) => ({
     businessName: expense.description,
     amount: expense.chargedAmount,
-    date: expense.date,
+    date: new Date(expense.date),
   }));
 }
 
@@ -34,12 +34,21 @@ async function getAllExpenses(
     bankScraperClient: typeof BankScraperClient;
   },
   options: Option[]
-): Promise<Expense[]> {
-  const allExpenses = [];
+): Promise<Record<string, Expense[]>> {
+  const allExpenses: Record<string, Expense[]> = {};
   for (const option of options) {
-    allExpenses.push(await getExpenses({ bankScraperClient }, option));
+    if (allExpenses[option.provider]) {
+      allExpenses[option.provider] = [
+        ...allExpenses[option.provider],
+        ...(await getExpenses({ bankScraperClient }, option)),
+      ];
+    }
+    allExpenses[option.provider] = await getExpenses(
+      { bankScraperClient },
+      option
+    );
   }
-  return allExpenses.flat();
+  return allExpenses;
 }
 
 const expenseRepository = {
