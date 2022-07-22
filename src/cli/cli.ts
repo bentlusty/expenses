@@ -58,15 +58,19 @@ function askForCredentialsField(field: string) {
 }
 
 async function promptForMissingOptions(fromDate: string) {
+  const currentSupportedProviders = [
+    CompanyTypes.isracard,
+    CompanyTypes.hapoalim,
+  ];
   const questions = [
     {
       type: "list",
       name: "provider",
       message: "What is your Provider?",
       choices: () =>
-        Object.entries(CompanyTypes).map(([key, value]) => ({
-          name: key,
-          value,
+        currentSupportedProviders.map((provider) => ({
+          name: provider,
+          provider,
         })),
       validate: (value: string) => !!value || "Required Field!",
     },
