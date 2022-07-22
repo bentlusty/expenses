@@ -1,26 +1,8 @@
-import BusinessRepository, {
-  Businesses,
-} from "../repositories/business-repository/business-repository";
-import path from "path";
+import { Businesses } from "../repositories/business-repository/business-repository";
 import inquirer from "inquirer";
-import ExpenseRepository, {
-  Expense,
-} from "../repositories/expense-repository/expense-repository";
-import BankScraperClient from "../clients/bank-scraper-client";
-import { Option } from "../cli/cli";
+import { Expense } from "../repositories/expense-repository/expense-repository";
 
-type Dependencies = {
-  bankScraperClient: typeof BankScraperClient;
-  expenseRepository: typeof ExpenseRepository;
-  businessRepository: typeof BusinessRepository;
-};
-
-const PATH_TO_BUSINESS_DB = path.join(
-  __dirname,
-  "../../src/db/businesses.json"
-);
-
-async function askForBusinessesNames(
+export async function askForBusinessesNames(
   allExpenses: Record<string, Expense[]>,
   businesses: Businesses
 ) {
@@ -43,23 +25,4 @@ async function askForBusinessesNames(
       }
     }
   }
-}
-
-export default async function normalizeExpenses(
-  { expenseRepository, bankScraperClient, businessRepository }: Dependencies,
-  options: Option[]
-) {
-  const allExpenses = await expenseRepository.getAllExpenses(
-    { bankScraperClient },
-    options
-  );
-  const businesses = await businessRepository.getBusinesses(
-    PATH_TO_BUSINESS_DB
-  );
-
-  await askForBusinessesNames(allExpenses, businesses);
-  await businessRepository.setBusinesses(
-    path.join(__dirname, "../../src/db/businesses.json"),
-    businesses
-  );
 }
