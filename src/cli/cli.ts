@@ -9,7 +9,6 @@ import { SCRAPERS } from "israeli-bank-scrapers";
 
 export type Option = {
   provider: CompanyTypes;
-  fromDate: Date;
   credentials: Record<string, string>;
 };
 
@@ -57,7 +56,7 @@ function askForCredentialsField(field: string) {
   };
 }
 
-async function promptForMissingOptions(fromDate: string) {
+async function promptForMissingOptions() {
   const currentSupportedProviders = [
     CompanyTypes.isracard,
     CompanyTypes.hapoalim,
@@ -91,22 +90,21 @@ async function promptForMissingOptions(fromDate: string) {
   return {
     provider,
     credentials,
-    fromDate: new Date(fromDate),
   };
 }
 
 async function getOptions(argv: { from?: string }) {
   const { fromDate } = await askForFromDate(argv.from);
-  const option = await promptForMissingOptions(fromDate);
+  const option = await promptForMissingOptions();
   const options = [option];
 
   let { shouldPromptForMoreProvider } = await askForMoreProviders();
   while (shouldPromptForMoreProvider) {
-    options.push(await promptForMissingOptions(fromDate));
+    options.push(await promptForMissingOptions());
     const result = await askForMoreProviders();
     shouldPromptForMoreProvider = result.shouldPromptForMoreProvider;
   }
-  return options;
+  return { options, fromDate: new Date(fromDate) };
 }
 
 export async function cli(args: string[]) {
@@ -128,8 +126,8 @@ export async function cli(args: string[]) {
           });
       },
       async (argv) => {
-        const options = await getOptions(argv);
-        await normalizeCommand(options);
+        const { options, fromDate } = await getOptions(argv);
+        await normalizeCommand({ options, fromDate });
       }
     )
     .command(
@@ -142,8 +140,8 @@ export async function cli(args: string[]) {
         });
       },
       async (argv) => {
-        const options = await getOptions(argv);
-        await generateReportCommand(options);
+        const { options, fromDate } = await getOptions(argv);
+        await generateReportCommand({ options, fromDate });
       }
     )
     .help()

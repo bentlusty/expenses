@@ -6,11 +6,11 @@ type Expense = {
   date: Date;
 };
 
-type AggregatedExpense = {
+export type AggregatedExpense = {
   [key: string]: { total: number; count: number };
 };
 
-const months = [
+export const MONTHS = [
   "January",
   "February",
   "March",
@@ -25,7 +25,7 @@ const months = [
   "December",
 ];
 
-function aggregateExpenses(expenses: Expense[]): AggregatedExpense {
+export function aggregateExpenses(expenses: Expense[]): AggregatedExpense {
   return expenses.reduce(
     (aggregatedSumByName: AggregatedExpense, expense: Expense) => {
       if (!aggregatedSumByName[expense.businessName]) {
@@ -62,7 +62,7 @@ export function aggregateExpensesByMonth(expenses: Expense[]): Report {
   );
   const map = Object.entries(aggregatedExpensesByMonth).map(
     ([month, expenses]) => {
-      const textualMonth = months[parseInt(month)];
+      const textualMonth = MONTHS[parseInt(month)];
       return {
         [textualMonth]: {
           data: aggregateExpenses(expenses),
@@ -72,4 +72,15 @@ export function aggregateExpensesByMonth(expenses: Expense[]): Report {
     }
   );
   return Object.assign({}, ...map);
+}
+
+export function removeDuplicateExpenses(
+  aggregatedExpenses: AggregatedExpense
+): AggregatedExpense {
+  return Object.keys(aggregatedExpenses)
+    .filter((key) => key !== "Isracard")
+    .reduce((filteredAggregatedExpenses: AggregatedExpense, key: string) => {
+      filteredAggregatedExpenses[key] = aggregatedExpenses[key];
+      return filteredAggregatedExpenses;
+    }, {});
 }

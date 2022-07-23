@@ -13,7 +13,8 @@ async function getExpenses(
   }: {
     bankScraperClient: typeof BankScraperClient;
   },
-  { fromDate, credentials, provider }: Option
+  { credentials, provider }: Option,
+  fromDate: Date
 ): Promise<Expense[]> {
   const expenses = await bankScraperClient.get({
     fromDate,
@@ -27,32 +28,8 @@ async function getExpenses(
   }));
 }
 
-async function getAllExpenses(
-  {
-    bankScraperClient,
-  }: {
-    bankScraperClient: typeof BankScraperClient;
-  },
-  options: Option[]
-): Promise<Record<string, Expense[]>> {
-  const allExpenses: Record<string, Expense[]> = {};
-  for (const option of options) {
-    if (allExpenses[option.provider]) {
-      allExpenses[option.provider] = [
-        ...allExpenses[option.provider],
-        ...(await getExpenses({ bankScraperClient }, option)),
-      ];
-    }
-    allExpenses[option.provider] = await getExpenses(
-      { bankScraperClient },
-      option
-    );
-  }
-  return allExpenses;
-}
-
 const expenseRepository = {
-  getAllExpenses,
+  getExpenses,
 };
 
 export default expenseRepository;
